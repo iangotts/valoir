@@ -7,122 +7,149 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --bg0:#0a0c10; --bg1:#12151d; --bg2:#191e2a; --bg3:#1f2535;
-  --brd:#252d40; --brd2:#2e3850;
-  --blue:#4f8ef7; --green:#3dd68c; --amber:#f5a623; --red:#f75151;
-  --tp:#e8ecf4; --tm:#8392ad; --ts:#5a6880;
-}
-html, body { min-height:100vh; background:var(--bg0); color:var(--tp); font-family:'IBM Plex Sans',system-ui,sans-serif; }
-.topbar { background:var(--bg1); border-bottom:1px solid var(--brd); padding:0 32px; height:56px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:20; }
-.logo { font-family:'DM Serif Display',Georgia,serif; font-size:17px; display:flex; align-items:center; gap:10px; }
-.logo-accent { color:var(--amber); }
-.logo-sub { font-family:'IBM Plex Sans',sans-serif; font-size:13px; font-weight:300; color:var(--tm); border-left:1px solid var(--brd2); padding-left:12px; }
-.steps { display:flex; align-items:center; }
-.step { display:flex; align-items:center; gap:7px; font-size:12px; color:var(--ts); padding:6px 12px; font-family:'IBM Plex Mono',monospace; }
-.step.active { color:var(--blue); }
-.step-num { width:22px; height:22px; border-radius:50%; border:1px solid currentColor; display:flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0; }
-.step.active .step-num { background:var(--blue); border-color:var(--blue); color:#0a0c10; }
-.step-line { width:32px; height:1px; background:var(--brd2); }
-.gear-wrap { position:relative; }
-.gear-btn { width:34px; height:34px; border-radius:8px; border:1px solid var(--brd2); background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--ts); }
-.gear-btn:hover { border-color:var(--blue); color:var(--blue); background:rgba(79,142,247,.07); }
-.gear-btn.active { border-color:var(--blue); color:var(--blue); background:rgba(79,142,247,.1); }
-.gear-btn svg { width:16px; height:16px; }
-.key-dot { width:7px; height:7px; border-radius:50%; background:var(--green); border:1.5px solid var(--bg1); position:absolute; top:6px; right:6px; display:none; }
-.gear-wrap.has-key .key-dot { display:block; }
-.drawer-overlay { display:none; position:fixed; inset:0; z-index:18; }
-.drawer-overlay.open { display:block; }
-.settings-drawer { position:fixed; top:56px; right:0; width:360px; background:var(--bg1); border-left:1px solid var(--brd); border-bottom:1px solid var(--brd); border-radius:0 0 0 12px; padding:20px 22px 22px; z-index:19; transform:translateY(-8px); opacity:0; pointer-events:none; transition:transform .2s,opacity .2s; max-height:calc(100vh - 56px); overflow-y:auto; }
-.settings-drawer.open { transform:translateY(0); opacity:1; pointer-events:all; }
-.dtitle { font-size:10px; font-family:'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:.1em; color:var(--ts); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
-.dtitle::after { content:''; flex:1; height:1px; background:var(--brd); }
-.plabel { font-size:10px; font-family:'IBM Plex Mono',monospace; color:var(--ts); text-transform:uppercase; letter-spacing:.08em; margin-bottom:5px; }
-.psel { display:flex; gap:6px; margin-bottom:16px; }
-.pb { flex:1; padding:7px 4px; border-radius:7px; border:1px solid var(--brd2); background:transparent; color:var(--ts); font-size:11px; font-family:'IBM Plex Sans',sans-serif; cursor:pointer; text-align:center; }
-.pb:hover { color:var(--tm); background:var(--bg3); }
-.pb.sel { color:var(--tp); border-color:var(--blue); background:rgba(79,142,247,.1); font-weight:500; }
-.pb .pd { width:5px; height:5px; border-radius:50%; background:var(--ts); display:inline-block; margin-right:4px; vertical-align:middle; }
-.pb.ks .pd { background:var(--green); }
-.ksec { background:var(--bg2); border:1px solid var(--brd); border-radius:9px; padding:12px 14px; margin-bottom:10px; }
-.ksec-name { font-size:12px; font-weight:500; display:flex; align-items:center; gap:7px; margin-bottom:8px; }
-.kbadge { font-size:9px; font-family:'IBM Plex Mono',monospace; padding:2px 7px; border-radius:10px; background:rgba(61,214,140,.1); color:var(--green); border:1px solid rgba(61,214,140,.25); }
-.kns { font-size:9px; font-family:'IBM Plex Mono',monospace; color:var(--ts); }
-.kinp { width:100%; background:var(--bg3); border:1px solid var(--brd2); border-radius:6px; padding:8px 10px; font-size:12px; font-family:'IBM Plex Mono',monospace; color:var(--tp); outline:none; margin-bottom:8px; }
-.kinp:focus { border-color:var(--blue); }
-.kinp::placeholder { color:var(--ts); font-size:11px; }
-.kacts { display:flex; gap:6px; align-items:center; }
-.btnt { background:var(--blue); color:#fff; border:none; border-radius:6px; padding:7px 14px; font-size:11px; font-weight:500; cursor:pointer; font-family:'IBM Plex Sans',sans-serif; display:flex; align-items:center; gap:5px; min-width:80px; justify-content:center; }
-.btnt:disabled { opacity:.45; cursor:not-allowed; }
-.btnt:not(:disabled):hover { opacity:.85; }
-.bclr { background:transparent; border:1px solid var(--brd); color:var(--ts); border-radius:6px; padding:7px 10px; font-size:11px; cursor:pointer; font-family:'IBM Plex Sans',sans-serif; }
-.bclr:hover { border-color:var(--red); color:var(--red); }
-.kst { font-size:10px; font-family:'IBM Plex Mono',monospace; }
-.kst.ok { color:var(--green); }
-.kst.er { color:var(--red); }
-.kerr { font-size:10px; font-family:'IBM Plex Mono',monospace; color:var(--red); margin-top:6px; padding:6px 8px; background:rgba(247,81,81,.07); border:1px solid rgba(247,81,81,.18); border-radius:5px; line-height:1.5; display:none; word-break:break-all; }
-.kerr.on { display:block; }
-@keyframes sp { to { transform:rotate(360deg); } }
-.bsp { width:11px; height:11px; border:2px solid rgba(255,255,255,.25); border-top-color:#fff; border-radius:50%; animation:sp .7s linear infinite; display:none; }
-.btnt.busy .bsp { display:block; }
-.dnote { font-size:10px; color:var(--ts); line-height:1.6; margin-top:4px; }
-.page { max-width:780px; margin:0 auto; padding:44px 24px 100px; }
-h1.ph { font-family:'DM Serif Display',Georgia,serif; font-size:28px; font-weight:normal; margin-bottom:8px; }
-.psub { font-size:13px; color:var(--tm); line-height:1.7; max-width:540px; margin-bottom:24px; }
-.fwl { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px; }
-.fwl-card { background:var(--bg2); border:1px solid var(--brd); border-radius:10px; padding:14px 16px; }
-.fwl-card h4 { font-size:11px; font-family:'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:.08em; margin-bottom:8px; }
-.fwl-card.b h4 { color:var(--green); }
-.fwl-card.r h4 { color:var(--amber); }
-.fdims { display:flex; gap:6px; flex-wrap:wrap; }
-.fdim { font-size:10px; font-family:'IBM Plex Mono',monospace; padding:3px 8px; border-radius:4px; }
-.b .fdim { background:rgba(61,214,140,.08); border:1px solid rgba(61,214,140,.2); color:var(--green); }
-.r .fdim { background:rgba(245,166,35,.08); border:1px solid rgba(245,166,35,.2); color:var(--amber); }
-.toolbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
-.tlabel { font-size:12px; color:var(--ts); font-family:'IBM Plex Mono',monospace; }
-.bsm { background:transparent; border:1px solid var(--brd2); color:var(--tm); border-radius:6px; padding:5px 12px; font-size:11px; font-family:'IBM Plex Sans',sans-serif; cursor:pointer; }
-.bsm:hover:not(:disabled) { border-color:var(--blue); color:var(--blue); }
-.bsm:disabled { opacity:.4; cursor:not-allowed; }
-@keyframes sl { to { transform:rotate(360deg); } }
-.ldg { display:flex; align-items:center; gap:12px; padding:20px; background:var(--bg2); border:1px solid var(--brd); border-radius:10px; font-size:13px; color:var(--tm); }
-.lsp { width:18px; height:18px; border:2px solid var(--brd2); border-top-color:var(--blue); border-radius:50%; animation:sl .8s linear infinite; flex-shrink:0; }
-.cerr { display:none; padding:18px 20px; background:rgba(247,81,81,.05); border:1px solid rgba(247,81,81,.25); border-radius:10px; }
-.cetitle { font-size:13px; font-weight:500; color:var(--red); margin-bottom:6px; }
-.cebody { font-size:12px; color:var(--tm); line-height:1.7; margin-bottom:12px; }
-.ceacts { display:flex; gap:8px; flex-wrap:wrap; }
-.bfl { display:inline-block; background:transparent; border:1px solid var(--brd2); color:var(--tm); border-radius:6px; padding:5px 12px; font-size:11px; font-family:'IBM Plex Sans',sans-serif; cursor:pointer; }
-.bfl:hover { border-color:var(--blue); color:var(--blue); }
-.uc-card { background:var(--bg2); border:1px solid var(--brd); border-radius:12px; padding:20px 22px; margin-bottom:12px; cursor:pointer; display:flex; align-items:flex-start; gap:16px; transition:border-color .15s,background .15s; user-select:none; }
-.uc-card:hover { border-color:var(--brd2); background:#1c2130; }
-.uc-card.chk { border-color:var(--blue); background:#0f1827; }
-.cb { width:20px; height:20px; border:1.5px solid var(--brd2); border-radius:5px; flex-shrink:0; margin-top:2px; display:flex; align-items:center; justify-content:center; }
-.uc-card.chk .cb { background:var(--blue); border-color:var(--blue); }
-.cbt { width:10px; height:7px; border-left:2px solid #0a0c10; border-bottom:2px solid #0a0c10; transform:rotate(-45deg) translate(1px,-1px); display:none; }
-.uc-card.chk .cbt { display:block; }
-.ub { flex:1; }
-.ub h3 { font-size:15px; font-weight:500; margin-bottom:6px; }
-.ub p { font-size:13px; color:var(--tm); line-height:1.6; }
-.umeta { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
-.tag { font-size:10px; padding:3px 9px; border-radius:20px; border:1px solid var(--brd2); color:var(--ts); font-family:'IBM Plex Mono',monospace; }
-.uarr { color:var(--brd2); font-size:18px; align-self:center; }
-.uc-card.chk .uarr { color:var(--blue); }
-.footer-sticky { position:fixed; bottom:0; left:0; right:0; background:rgba(10,12,16,.94); backdrop-filter:blur(12px); border-top:1px solid var(--brd); padding:16px 32px; display:flex; align-items:center; justify-content:space-between; z-index:10; }
-.seli { display:flex; flex-direction:column; gap:2px; }
-.selc { font-size:14px; font-weight:500; }
-.selc strong { color:var(--blue); }
-.selh { font-size:11px; color:var(--ts); font-family:'IBM Plex Mono',monospace; }
-.beval { background:var(--blue); color:#fff; border:none; border-radius:8px; padding:12px 28px; font-size:14px; font-weight:500; cursor:pointer; font-family:'IBM Plex Sans',sans-serif; display:flex; align-items:center; gap:8px; }
-.beval:disabled { opacity:.25; cursor:not-allowed; }
-.beval:not(:disabled):hover { opacity:.88; }
-</style>
-</head>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg0:#0a0c10; --bg1:#12151d; --bg2:#191e2a; --bg3:#1f2535;
+    --brd:#252d40; --brd2:#2e3850;
+    --blue:#4f8ef7; --green:#3dd68c; --amber:#f5a623; --red:#f75151;
+    --tp:#e8ecf4; --tm:#8392ad; --ts:#5a6880;
+  }
+  html,body { min-height:100vh; background:var(--bg0); color:var(--tp); font-family:'IBM Plex Sans',system-ui,sans-serif; }
+
+  .topbar { background:var(--bg1); border-bottom:1px solid var(--brd); padding:0 32px; height:56px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:20; }
+  .topbar-left { display:flex; align-items:center; }
+  .topbar-right { display:flex; align-items:center; gap:12px; }
+  .logo { font-family:'DM Serif Display',Georgia,serif; font-size:17px; display:flex; align-items:center; gap:10px; }
+  .logo-accent { color:var(--amber); }
+  .logo-sub { font-family:'IBM Plex Sans',sans-serif; font-size:13px; font-weight:300; color:var(--tm); border-left:1px solid var(--brd2); padding-left:12px; }
+
+  .steps { display:flex; align-items:center; }
+  .step { display:flex; align-items:center; gap:7px; font-size:12px; color:var(--ts); padding:6px 12px; font-family:'IBM Plex Mono',monospace; }
+  .step.active { color:var(--blue); }
+  .step.done { color:var(--green); }
+  .step-num { width:22px; height:22px; border-radius:50%; border:1px solid currentColor; display:flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0; }
+  .step.done .step-num { background:var(--green); border-color:var(--green); color:#0a0c10; }
+  .step.active .step-num { background:var(--blue); border-color:var(--blue); color:#0a0c10; }
+  .step-line { width:32px; height:1px; background:var(--brd2); }
+
+  /* gear button */
+  .gear-btn { width:34px; height:34px; border-radius:8px; border:1px solid var(--brd2); background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:border-color 0.15s,background 0.15s; color:var(--ts); flex-shrink:0; }
+  .gear-btn:hover { border-color:var(--blue); color:var(--blue); background:rgba(79,142,247,0.07); }
+  .gear-btn.active { border-color:var(--blue); color:var(--blue); background:rgba(79,142,247,0.1); }
+  .gear-btn svg { width:16px; height:16px; }
+  .key-dot { width:7px; height:7px; border-radius:50%; background:var(--green); border:1.5px solid var(--bg1); position:absolute; top:6px; right:6px; display:none; }
+  .gear-wrap { position:relative; }
+  .gear-wrap.has-key .key-dot { display:block; }
+
+  /* settings drawer */
+  .settings-drawer { position:fixed; top:56px; right:0; width:360px; background:var(--bg1); border-left:1px solid var(--brd); border-bottom:1px solid var(--brd); border-radius:0 0 0 12px; padding:20px 22px 22px; z-index:19; transform:translateY(-8px); opacity:0; pointer-events:none; transition:transform 0.2s ease,opacity 0.2s ease; max-height:calc(100vh - 56px); overflow-y:auto; }
+  .settings-drawer.open { transform:translateY(0); opacity:1; pointer-events:all; }
+  .drawer-title { font-size:10px; font-family:'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:0.1em; color:var(--ts); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+  .drawer-title::after { content:''; flex:1; height:1px; background:var(--brd); }
+
+  /* provider selector */
+  .provider-selector { display:flex; gap:6px; margin-bottom:18px; }
+  .prov-btn { flex:1; padding:7px 4px; border-radius:7px; border:1px solid var(--brd2); background:transparent; color:var(--ts); font-size:11px; font-family:'IBM Plex Sans',sans-serif; cursor:pointer; transition:all 0.15s; text-align:center; }
+  .prov-btn:hover { border-color:var(--brd2); color:var(--tm); background:var(--bg3); }
+  .prov-btn.selected { color:var(--tp); border-color:var(--blue); background:rgba(79,142,247,0.1); }
+  .prov-btn .prov-dot { width:5px; height:5px; border-radius:50%; background:var(--ts); display:inline-block; margin-right:4px; vertical-align:middle; transition:background 0.15s; }
+  .prov-btn.has-saved .prov-dot { background:var(--green); }
+  .prov-btn.selected { font-weight:500; }
+  .provider-label { font-size:10px; font-family:'IBM Plex Mono',monospace; color:var(--ts); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:5px; }
+
+  /* key sections */
+  .key-section { background:var(--bg2); border:1px solid var(--brd); border-radius:9px; padding:12px 14px; margin-bottom:10px; }
+  .key-section-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .key-section-name { font-size:12px; font-weight:500; display:flex; align-items:center; gap:7px; }
+  .key-saved-badge { font-size:9px; font-family:'IBM Plex Mono',monospace; padding:2px 7px; border-radius:10px; background:rgba(61,214,140,0.1); color:var(--green); border:1px solid rgba(61,214,140,0.25); }
+  .key-not-saved { font-size:9px; font-family:'IBM Plex Mono',monospace; color:var(--ts); }
+  .key-input { width:100%; background:var(--bg3); border:1px solid var(--brd2); border-radius:6px; padding:8px 10px; font-size:12px; font-family:'IBM Plex Mono',monospace; color:var(--tp); outline:none; margin-bottom:8px; }
+  .key-input:focus { border-color:var(--blue); }
+  .key-input::placeholder { color:var(--ts); font-size:11px; }
+  .key-actions { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+  .btn-test { background:var(--blue); color:#fff; border:none; border-radius:6px; padding:7px 14px; font-size:11px; font-weight:500; cursor:pointer; font-family:'IBM Plex Sans',sans-serif; display:flex; align-items:center; gap:5px; min-width:80px; justify-content:center; transition:opacity 0.15s; }
+  .btn-test:hover:not(:disabled) { opacity:0.85; }
+  .btn-test:disabled { opacity:0.45; cursor:not-allowed; }
+  .btn-kclr { background:transparent; border:1px solid var(--brd); color:var(--ts); border-radius:6px; padding:7px 10px; font-size:11px; cursor:pointer; font-family:'IBM Plex Sans',sans-serif; }
+  .btn-kclr:hover { border-color:var(--red); color:var(--red); }
+  .key-status { font-size:10px; font-family:'IBM Plex Mono',monospace; }
+  .key-status.ok { color:var(--green); }
+  .key-status.err { color:var(--red); }
+  .key-err-detail { font-size:10px; font-family:'IBM Plex Mono',monospace; color:var(--red); margin-top:6px; padding:6px 8px; background:rgba(247,81,81,0.07); border:1px solid rgba(247,81,81,0.18); border-radius:5px; line-height:1.5; display:none; word-break:break-all; }
+  .key-err-detail.show { display:block; }
+  @keyframes spin-s { to { transform:rotate(360deg); } }
+  .btn-spinner { width:11px; height:11px; border:2px solid rgba(255,255,255,0.25); border-top-color:#fff; border-radius:50%; animation:spin-s 0.7s linear infinite; display:none; }
+  .btn-test.testing .btn-spinner { display:block; }
+
+  .drawer-note { font-size:10px; color:var(--ts); line-height:1.6; margin-top:4px; }
+  .drawer-overlay { display:none; position:fixed; inset:0; z-index:18; }
+  .drawer-overlay.open { display:block; }
+
+  .page { max-width:780px; margin:0 auto; padding:44px 24px 100px; }
+  .page-header { margin-bottom:28px; }
+  .page-header h1 { font-family:'DM Serif Display',Georgia,serif; font-size:28px; font-weight:normal; margin-bottom:8px; }
+  .page-header p { font-size:13px; color:var(--tm); line-height:1.7; max-width:540px; }
+
+  /* framework legend */
+  .framework-legend { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:28px; }
+  .legend-card { background:var(--bg2); border:1px solid var(--brd); border-radius:10px; padding:14px 16px; }
+  .legend-card h4 { font-size:11px; font-family:'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px; }
+  .legend-card.benefit h4 { color:var(--green); }
+  .legend-card.risk h4 { color:var(--amber); }
+  .legend-dims { display:flex; gap:6px; flex-wrap:wrap; }
+  .ldim { font-size:10px; font-family:'IBM Plex Mono',monospace; padding:3px 8px; border-radius:4px; }
+  .benefit .ldim { background:rgba(61,214,140,0.08); border:1px solid rgba(61,214,140,0.2); color:var(--green); }
+  .risk .ldim { background:rgba(245,166,35,0.08); border:1px solid rgba(245,166,35,0.2); color:var(--amber); }
+
+  .toolbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .toolbar-label { font-size:12px; color:var(--ts); font-family:'IBM Plex Mono',monospace; }
+  .btn-sm { background:transparent; border:1px solid var(--brd2); color:var(--tm); border-radius:6px; padding:5px 12px; font-size:11px; font-family:'IBM Plex Sans',sans-serif; cursor:pointer; transition:border-color 0.15s,color 0.15s; }
+  .btn-sm:hover { border-color:var(--blue); color:var(--blue); }
+
+  .uc-card { background:var(--bg2); border:1px solid var(--brd); border-radius:12px; padding:20px 22px; margin-bottom:12px; cursor:pointer; display:flex; align-items:flex-start; gap:16px; transition:border-color 0.15s,background 0.15s; user-select:none; }
+  .uc-card:hover { border-color:var(--brd2); background:#1c2130; }
+  .uc-card.checked { border-color:var(--blue); background:#0f1827; }
+  .cb { width:20px; height:20px; border:1.5px solid var(--brd2); border-radius:5px; flex-shrink:0; margin-top:2px; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+  .uc-card.checked .cb { background:var(--blue); border-color:var(--blue); }
+  .cb-tick { width:10px; height:7px; border-left:2px solid #0a0c10; border-bottom:2px solid #0a0c10; transform:rotate(-45deg) translate(1px,-1px); display:none; }
+  .uc-card.checked .cb-tick { display:block; }
+  .uc-body { flex:1; }
+  .uc-body h3 { font-size:15px; font-weight:500; margin-bottom:6px; }
+  .uc-body p { font-size:13px; color:var(--tm); line-height:1.6; }
+  .uc-meta { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+  .tag { font-size:10px; padding:3px 9px; border-radius:20px; border:1px solid var(--brd2); color:var(--ts); font-family:'IBM Plex Mono',monospace; }
+  .uc-arrow { color:var(--brd2); font-size:18px; align-self:center; transition:color 0.15s; }
+  .uc-card.checked .uc-arrow { color:var(--blue); }
+
+  .footer-sticky { position:fixed; bottom:0; left:0; right:0; background:rgba(10,12,16,0.94); backdrop-filter:blur(12px); border-top:1px solid var(--brd); padding:16px 32px; display:flex; align-items:center; justify-content:space-between; z-index:10; }
+  .sel-info { display:flex; flex-direction:column; gap:2px; }
+  .sel-count { font-size:14px; font-weight:500; }
+  .sel-count strong { color:var(--blue); }
+  .sel-hint { font-size:11px; color:var(--ts); font-family:'IBM Plex Mono',monospace; }
+  .btn-eval { background:var(--blue); color:#fff; border:none; border-radius:8px; padding:12px 28px; font-size:14px; font-weight:500; cursor:pointer; font-family:'IBM Plex Sans',sans-serif; transition:opacity 0.15s,transform 0.1s; display:flex; align-items:center; gap:8px; }
+  .btn-eval:disabled { opacity:0.25; cursor:not-allowed; }
+  .btn-eval:not(:disabled):hover { opacity:0.88; }
+  .btn-eval:not(:disabled):active { transform:scale(0.97); }
+
+  /* csv loading states */
+  .csv-state { display:flex; align-items:flex-start; gap:12px; padding:20px; background:var(--bg2); border:1px solid var(--brd); border-radius:10px; font-size:13px; color:var(--tm); }
+  @keyframes spin-l { to { transform:rotate(360deg); } }
+  .csv-spinner { width:18px; height:18px; border:2px solid var(--brd2); border-top-color:var(--blue); border-radius:50%; animation:spin-l 0.8s linear infinite; flex-shrink:0; margin-top:1px; }
+  .csv-error { border-color:rgba(247,81,81,0.3); background:rgba(247,81,81,0.05); }
+  .csv-error-icon { width:20px; height:20px; border-radius:50%; background:var(--red); color:#fff; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+
+
 <body>
 
 <div class="drawer-overlay" id="overlay" onclick="closeSettings()"></div>
 
 <div class="topbar">
-  <div class="logo">Valoir<span class="logo-accent"> ROI</span><span class="logo-sub">AI Use Case Prioritizer</span></div>
+  <div class="topbar-left">
+    <div class="logo">
+      Valoir<span class="logo-accent"> ROI</span>
+      <span class="logo-sub">AI Use Case Prioritizer</span>
+    </div>
+  </div>
   <div class="steps">
     <div class="step active"><div class="step-num">1</div><span>Select</span></div>
     <div class="step-line"></div>
@@ -130,68 +157,115 @@ h1.ph { font-family:'DM Serif Display',Georgia,serif; font-size:28px; font-weigh
     <div class="step-line"></div>
     <div class="step"><div class="step-num">3</div><span>Results</span></div>
   </div>
-  <div class="gear-wrap" id="gw">
-    <button class="gear-btn" id="gbtn" onclick="toggleSettings()" title="Settings">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="3"/>
-        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-      </svg>
-    </button>
-    <div class="key-dot"></div>
+  <div class="topbar-right">
+    <div class="gear-wrap" id="gearWrap">
+      <button class="gear-btn" id="gearBtn" onclick="toggleSettings()" title="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+      <div class="key-dot" id="keyDot"></div>
+    </div>
   </div>
 </div>
 
-<div class="settings-drawer" id="sd">
-  <div class="dtitle">Settings</div>
-  <div class="plabel">Model for evaluation</div>
-  <div class="psel">
-    <button class="pb sel" id="pb-anthropic" onclick="selProv('anthropic')"><span class="pd" id="pd-anthropic"></span>Anthropic</button>
-    <button class="pb" id="pb-openai" onclick="selProv('openai')"><span class="pd" id="pd-openai"></span>OpenAI</button>
-    <button class="pb" id="pb-gemini" onclick="selProv('gemini')"><span class="pd" id="pd-gemini"></span>Gemini</button>
+<div class="settings-drawer" id="settingsDrawer">
+  <div class="drawer-title">Settings</div>
+
+  <div class="provider-label">Model for evaluation</div>
+  <div class="provider-selector">
+    <button class="prov-btn selected" id="psel-anthropic" onclick="selectProvider('anthropic')"><span class="prov-dot" id="pdot-anthropic"></span>Anthropic</button>
+    <button class="prov-btn" id="psel-openai" onclick="selectProvider('openai')"><span class="prov-dot" id="pdot-openai"></span>OpenAI</button>
+    <button class="prov-btn" id="psel-gemini" onclick="selectProvider('gemini')"><span class="prov-dot" id="pdot-gemini"></span>Gemini</button>
   </div>
-  <div class="ksec">
-    <div class="ksec-name">Anthropic <span class="kbadge" id="kb-anthropic" style="display:none">saved</span><span class="kns" id="kns-anthropic">not saved</span></div>
-    <input class="kinp" type="password" id="ki-anthropic" placeholder="sk-ant-api03-…" autocomplete="off">
-    <div class="kacts"><button class="btnt" id="kbt-anthropic" onclick="testKey('anthropic')"><div class="bsp"></div><span>Test &amp; Save</span></button><button class="bclr" onclick="clearKey('anthropic')">Clear</button><span class="kst" id="ks-anthropic"></span></div>
-    <div class="kerr" id="ke-anthropic"></div>
+
+  <div class="key-section">
+    <div class="key-section-head">
+      <span class="key-section-name">Anthropic <span class="key-saved-badge" id="kbadge-anthropic" style="display:none">saved</span><span class="key-not-saved" id="knsaved-anthropic">not saved</span></span>
+    </div>
+    <input type="password" class="key-input" id="key-anthropic" placeholder="sk-ant-api03-…" autocomplete="off">
+    <div class="key-actions">
+      <button class="btn-test" id="kbtn-anthropic" onclick="testAndSave('anthropic')"><div class="btn-spinner"></div><span>Test &amp; Save</span></button>
+      <button class="btn-kclr" onclick="clearProviderKey('anthropic')">Clear</button>
+      <span class="key-status" id="kstatus-anthropic"></span>
+    </div>
+    <div class="key-err-detail" id="kerr-anthropic"></div>
   </div>
-  <div class="ksec">
-    <div class="ksec-name">OpenAI <span class="kbadge" id="kb-openai" style="display:none">saved</span><span class="kns" id="kns-openai">not saved</span></div>
-    <input class="kinp" type="password" id="ki-openai" placeholder="sk-…" autocomplete="off">
-    <div class="kacts"><button class="btnt" id="kbt-openai" onclick="testKey('openai')"><div class="bsp"></div><span>Test &amp; Save</span></button><button class="bclr" onclick="clearKey('openai')">Clear</button><span class="kst" id="ks-openai"></span></div>
-    <div class="kerr" id="ke-openai"></div>
+
+  <div class="key-section">
+    <div class="key-section-head">
+      <span class="key-section-name">OpenAI <span class="key-saved-badge" id="kbadge-openai" style="display:none">saved</span><span class="key-not-saved" id="knsaved-openai">not saved</span></span>
+    </div>
+    <input type="password" class="key-input" id="key-openai" placeholder="sk-…" autocomplete="off">
+    <div class="key-actions">
+      <button class="btn-test" id="kbtn-openai" onclick="testAndSave('openai')"><div class="btn-spinner"></div><span>Test &amp; Save</span></button>
+      <button class="btn-kclr" onclick="clearProviderKey('openai')">Clear</button>
+      <span class="key-status" id="kstatus-openai"></span>
+    </div>
+    <div class="key-err-detail" id="kerr-openai"></div>
   </div>
-  <div class="ksec">
-    <div class="ksec-name">Gemini <span class="kbadge" id="kb-gemini" style="display:none">saved</span><span class="kns" id="kns-gemini">not saved</span></div>
-    <input class="kinp" type="password" id="ki-gemini" placeholder="AIzaSy…" autocomplete="off">
-    <div class="kacts"><button class="btnt" id="kbt-gemini" onclick="testKey('gemini')"><div class="bsp"></div><span>Test &amp; Save</span></button><button class="bclr" onclick="clearKey('gemini')">Clear</button><span class="kst" id="ks-gemini"></span></div>
-    <div class="kerr" id="ke-gemini"></div>
+
+  <div class="key-section">
+    <div class="key-section-head">
+      <span class="key-section-name">Gemini <span class="key-saved-badge" id="kbadge-gemini" style="display:none">saved</span><span class="key-not-saved" id="knsaved-gemini">not saved</span></span>
+    </div>
+    <input type="password" class="key-input" id="key-gemini" placeholder="AIzaSy…" autocomplete="off">
+    <div class="key-actions">
+      <button class="btn-test" id="kbtn-gemini" onclick="testAndSave('gemini')"><div class="btn-spinner"></div><span>Test &amp; Save</span></button>
+      <button class="btn-kclr" onclick="clearProviderKey('gemini')">Clear</button>
+      <span class="key-status" id="kstatus-gemini"></span>
+    </div>
+    <div class="key-err-detail" id="kerr-gemini"></div>
   </div>
-  <div class="dnote">Keys verified before saving. Stored in localStorage only.</div>
+
+  <div class="drawer-note">Keys are verified before saving. Stored in localStorage only — never proxied.</div>
 </div>
 
 <div class="page">
-  <h1 class="ph">Select Use Cases to Evaluate</h1>
-  <p class="psub">Choose the AI use cases you want to score. The model will apply Valoir's ROI framework across 4 benefit and 4 risk dimensions to generate a prioritised ranking.</p>
+  <div class="page-header">
+    <h1>Select Use Cases to Evaluate</h1>
+    <p>Choose the AI use cases you want to score. Claude will apply Valoir's ROI framework — scoring each on 4 benefit dimensions and 4 risk dimensions — to generate a prioritised ranking.</p>
+  </div>
 
-  <div class="fwl">
-    <div class="fwl-card b"><h4>4P — Benefit Score</h4><div class="fdims"><span class="fdim">People</span><span class="fdim">Process</span><span class="fdim">Price</span><span class="fdim">Potential</span></div></div>
-    <div class="fwl-card r"><h4>4I — Risk Score</h4><div class="fdims"><span class="fdim">Intelligence</span><span class="fdim">Integration</span><span class="fdim">Interaction</span><span class="fdim">Importance</span></div></div>
+  <div class="framework-legend">
+    <div class="legend-card benefit">
+      <h4>4P — Benefit Score</h4>
+      <div class="legend-dims">
+        <span class="ldim">People</span>
+        <span class="ldim">Process</span>
+        <span class="ldim">Price</span>
+        <span class="ldim">Potential</span>
+      </div>
+    </div>
+    <div class="legend-card risk">
+      <h4>4I — Risk Score</h4>
+      <div class="legend-dims">
+        <span class="ldim">Intelligence</span>
+        <span class="ldim">Integration</span>
+        <span class="ldim">Interaction</span>
+        <span class="ldim">Importance</span>
+      </div>
+    </div>
   </div>
 
   <div class="toolbar">
-    <span class="tlabel" id="rowCount">Loading usecases.csv…</span>
-    <button class="bsm" id="selAllBtn" onclick="toggleAll()" disabled>Select All</button>
+    <span class="toolbar-label" id="rowCount">Loading usecases.csv…</span>
+    <button class="btn-sm" id="selectAllBtn" onclick="toggleAll()" disabled>Select All</button>
   </div>
 
-  <div class="ldg" id="ldg"><div class="lsp"></div><span>Fetching usecases.csv…</span></div>
-
-  <div class="cerr" id="cerr">
-    <div class="cetitle" id="cetitle">Could not load usecases.csv</div>
-    <div class="cebody">Place <code style="font-family:monospace;color:var(--amber)">usecases.csv</code> in the same folder as <code style="font-family:monospace;color:var(--blue)">index.html</code> and refresh. The CSV must have a <code style="font-family:monospace;color:var(--blue)">name</code> column. Or browse for the file manually.</div>
-    <div class="ceacts">
-      <button class="bsm" onclick="loadCSV()">↺ Retry</button>
-      <label class="bfl">Browse for CSV…<input type="file" accept=".csv" style="display:none" onchange="loadFromFile(this)"></label>
+  <!-- loading / error states -->
+  <div id="csvLoading" class="csv-state">
+    <div class="csv-spinner"></div>
+    <span>Fetching usecases.csv…</span>
+  </div>
+  <div id="csvError" class="csv-state csv-error" style="display:none">
+    <div class="csv-error-icon">!</div>
+    <div>
+      <div id="csvErrorMsg" style="font-weight:500;margin-bottom:4px;"></div>
+      <div style="font-size:11px;color:var(--ts);">Place <code style="font-family:'IBM Plex Mono',monospace;color:var(--amber);">usecases.csv</code> in the same folder as <code style="font-family:'IBM Plex Mono',monospace;color:var(--blue);">index.html</code> and refresh. The CSV must have a <code style="font-family:'IBM Plex Mono',monospace;color:var(--blue);">name</code> column.</div>
+      <button class="btn-sm" style="margin-top:10px;" onclick="loadCSV()">Retry</button>
+      <label class="btn-sm" style="margin-top:6px;margin-left:6px;cursor:pointer;">Browse for file…<input type="file" accept=".csv" style="display:none" onchange="loadFromFile(this)"></label>
     </div>
   </div>
 
@@ -199,168 +273,266 @@ h1.ph { font-family:'DM Serif Display',Georgia,serif; font-size:28px; font-weigh
 </div>
 
 <div class="footer-sticky">
-  <div class="seli">
-    <div class="selc"><strong id="selNum">0</strong> of <span id="totalNum">0</span> use cases selected</div>
-    <div class="selh">net score = 4P benefit avg − 4I risk avg</div>
+  <div class="sel-info">
+    <div class="sel-count"><strong id="selNum">2</strong> of <span id="totalNum">3</span> use cases selected</div>
+    <div class="sel-hint">net score = 4P benefit avg − 4I risk avg</div>
   </div>
-  <button class="beval" id="evalBtn" onclick="proceed()" disabled>Evaluate Selected (<span id="evalCnt">0</span>) →</button>
+  <button class="btn-eval" id="evalBtn" onclick="proceed()">
+    Evaluate Selected (<span id="evalCount">2</span>) →
+  </button>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script>
-var useCases = [];
-var checked  = new Set();
+  /* ── STATE ── */
+  let allUseCases = [];   // parsed from CSV: [{ name, desc, tags, ...rawRow }]
+  let checkedIds = new Set();
 
-var PROV = {
-  anthropic: { ls:'anthropic_key', test: function(k){ return fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:10,messages:[{role:'user',content:'Hi'}]})}).then(function(r){return r.json().then(function(d){if(!r.ok)throw new Error((d.error&&d.error.type||'err')+': '+(d.error&&d.error.message||r.status));});}); } },
-  openai:    { ls:'openai_key',    test: function(k){ return fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+k},body:JSON.stringify({model:'gpt-4o-mini',max_tokens:10,messages:[{role:'user',content:'Hi'}]})}).then(function(r){return r.json().then(function(d){if(!r.ok)throw new Error((d.error&&d.error.code||'err')+': '+(d.error&&d.error.message||r.status));});}); } },
-  gemini:    { ls:'gemini_key',    test: function(k){ return fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+k,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:'Hi'}]}],generationConfig:{maxOutputTokens:10}})}).then(function(r){return r.json().then(function(d){if(!r.ok)throw new Error((d.error&&d.error.status||'err')+': '+(d.error&&d.error.message||r.status));});}); } }
-};
-
-function toggleSettings(){ var d=document.getElementById('sd'),b=document.getElementById('gbtn'),o=document.getElementById('overlay'),op=d.classList.contains('open'); d.classList.toggle('open',!op);b.classList.toggle('active',!op);o.classList.toggle('open',!op); }
-function closeSettings(){ document.getElementById('sd').classList.remove('open');document.getElementById('gbtn').classList.remove('active');document.getElementById('overlay').classList.remove('open'); }
-
-function selProv(p){ localStorage.setItem('selected_provider',p); ['anthropic','openai','gemini'].forEach(function(id){ document.getElementById('pb-'+id).classList.toggle('sel',id===p); }); }
-
-function testKey(p){
-  var key=document.getElementById('ki-'+p).value.trim(); if(!key) return;
-  var btn=document.getElementById('kbt-'+p), sp=btn.querySelector('.bsp'), st=document.getElementById('ks-'+p), er=document.getElementById('ke-'+p);
-  btn.disabled=true; btn.classList.add('busy'); sp.style.display='block'; er.classList.remove('on'); st.textContent=''; st.className='kst';
-  PROV[p].test(key).then(function(){
-    localStorage.setItem(PROV[p].ls,key); badge(p,true); dot();
-    st.textContent='✓ Verified'; st.className='kst ok'; setTimeout(function(){st.textContent='';},3000);
-  }).catch(function(e){
-    localStorage.removeItem(PROV[p].ls); badge(p,false); dot();
-    st.textContent='✗ Failed'; st.className='kst er'; er.textContent=e.message; er.classList.add('on');
-  }).finally(function(){ btn.disabled=false; btn.classList.remove('busy'); sp.style.display='none'; });
-}
-
-function clearKey(p){ localStorage.removeItem(PROV[p].ls); document.getElementById('ki-'+p).value=''; document.getElementById('ke-'+p).classList.remove('on'); document.getElementById('ks-'+p).textContent=''; badge(p,false); dot(); }
-
-function badge(p,s){ document.getElementById('kb-'+p).style.display=s?'inline':'none'; document.getElementById('kns-'+p).style.display=s?'none':'inline'; document.getElementById('pb-'+p).classList.toggle('ks',s); document.getElementById('pd-'+p).style.background=s?'var(--green)':'var(--ts)'; }
-function dot(){ var a=['anthropic','openai','gemini'].some(function(p){return !!localStorage.getItem(PROV[p].ls);}); document.getElementById('gw').classList.toggle('has-key',a); }
-
-/* ── CSV parser (no external lib) ── */
-function parseCSV(txt){
-  var rows=[], hdrs=[];
-  var lines=txt.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n');
-  lines.forEach(function(line,li){
-    if(!line.trim()) return;
-    var cols=[],cur='',inQ=false;
-    for(var i=0;i<line.length;i++){
-      var c=line[i];
-      if(c==='"'){inQ=!inQ;}
-      else if(c===','&&!inQ){cols.push(cur.trim());cur='';}
-      else{cur+=c;}
+  /* ── SETTINGS ── */
+  const PROVIDERS = {
+    anthropic: {
+      label: 'Anthropic', lsKey: 'anthropic_key',
+      test: async (key) => {
+        const r = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}, body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:10,messages:[{role:'user',content:'Hi'}]}) });
+        const d = await r.json(); if (!r.ok) throw new Error(`${d?.error?.type||'error'}: ${d?.error?.message||r.status}`);
+      }
+    },
+    openai: {
+      label: 'OpenAI', lsKey: 'openai_key',
+      test: async (key) => {
+        const r = await fetch('https://api.openai.com/v1/chat/completions', { method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`}, body:JSON.stringify({model:'gpt-4o-mini',max_tokens:10,messages:[{role:'user',content:'Hi'}]}) });
+        const d = await r.json(); if (!r.ok) throw new Error(`${d?.error?.code||'error'}: ${d?.error?.message||r.status}`);
+      }
+    },
+    gemini: {
+      label: 'Gemini', lsKey: 'gemini_key',
+      test: async (key) => {
+        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts:[{text:'Hi'}]}],generationConfig:{maxOutputTokens:10}}) });
+        const d = await r.json(); if (!r.ok) throw new Error(`${d?.error?.status||'error'}: ${d?.error?.message||r.status}`);
+      }
     }
-    cols.push(cur.trim());
-    if(li===0){ hdrs=cols.map(function(h){return h.toLowerCase().replace(/"/g,'').trim();}); }
-    else{
-      if(cols.every(function(c){return !c.trim();})) return;
-      var row={};
-      hdrs.forEach(function(h,i){row[h]=(cols[i]||'').replace(/^"|"$/g,'').trim();});
-      rows.push(row);
+  };
+
+  function toggleSettings() {
+    const drawer = document.getElementById('settingsDrawer'), btn = document.getElementById('gearBtn'), overlay = document.getElementById('overlay');
+    const isOpen = drawer.classList.contains('open');
+    drawer.classList.toggle('open', !isOpen); btn.classList.toggle('active', !isOpen); overlay.classList.toggle('open', !isOpen);
+  }
+  function closeSettings() {
+    document.getElementById('settingsDrawer').classList.remove('open');
+    document.getElementById('gearBtn').classList.remove('active');
+    document.getElementById('overlay').classList.remove('open');
+  }
+  function selectProvider(p) {
+    localStorage.setItem('selected_provider', p);
+    ['anthropic','openai','gemini'].forEach(id => document.getElementById('psel-' + id).classList.toggle('selected', id === p));
+  }
+  async function testAndSave(p) {
+    const cfg = PROVIDERS[p];
+    const key = document.getElementById('key-' + p).value.trim();
+    if (!key) return;
+    const btn = document.getElementById('kbtn-' + p);
+    const spinner = btn.querySelector('.btn-spinner');
+    const statusEl = document.getElementById('kstatus-' + p);
+    const errEl = document.getElementById('kerr-' + p);
+    btn.disabled = true; btn.classList.add('testing'); spinner.style.display = 'block';
+    errEl.classList.remove('show'); statusEl.textContent = ''; statusEl.className = 'key-status';
+    try {
+      await cfg.test(key);
+      localStorage.setItem(cfg.lsKey, key);
+      updateProviderBadge(p, true); updateKeyDot();
+      statusEl.textContent = '✓ Verified'; statusEl.className = 'key-status ok';
+      setTimeout(() => { statusEl.textContent = ''; }, 3000);
+    } catch(e) {
+      updateProviderBadge(p, false); updateKeyDot();
+      statusEl.textContent = '✗ Failed'; statusEl.className = 'key-status err';
+      errEl.textContent = e.message; errEl.classList.add('show');
+      localStorage.removeItem(cfg.lsKey);
     }
+    btn.disabled = false; btn.classList.remove('testing'); spinner.style.display = 'none';
+  }
+  function clearProviderKey(p) {
+    localStorage.removeItem(PROVIDERS[p].lsKey);
+    document.getElementById('key-' + p).value = '';
+    document.getElementById('kerr-' + p).classList.remove('show');
+    document.getElementById('kstatus-' + p).textContent = '';
+    updateProviderBadge(p, false); updateKeyDot();
+  }
+  function updateProviderBadge(p, saved) {
+    document.getElementById('kbadge-' + p).style.display = saved ? 'inline' : 'none';
+    document.getElementById('knsaved-' + p).style.display = saved ? 'none' : 'inline';
+    document.getElementById('psel-' + p).classList.toggle('has-saved', saved);
+    document.getElementById('pdot-' + p).style.background = saved ? 'var(--green)' : 'var(--ts)';
+  }
+  function updateKeyDot() {
+    const any = ['anthropic','openai','gemini'].some(p => !!localStorage.getItem(PROVIDERS[p].lsKey));
+    document.getElementById('gearWrap').classList.toggle('has-key', any);
+  }
+
+  /* ── CSV LOADING ── */
+  async function loadCSV() {
+    document.getElementById('csvLoading').style.display = 'flex';
+    document.getElementById('csvError').style.display = 'none';
+    document.getElementById('ucList').innerHTML = '';
+    try {
+      const res = await fetch('usecases.csv?' + Date.now()); // cache-bust on retry
+      if (!res.ok) throw new Error(`Could not fetch usecases.csv (HTTP ${res.status})`);
+      const text = await res.text();
+      parseAndRender(text);
+    } catch(e) {
+      showCSVError(e.message);
+    }
+  }
+
+  function loadFromFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    document.getElementById('csvLoading').style.display = 'flex';
+    document.getElementById('csvError').style.display = 'none';
+    const reader = new FileReader();
+    reader.onload = (e) => parseAndRender(e.target.result);
+    reader.onerror = () => showCSVError('Failed to read file.');
+    reader.readAsText(file);
+  }
+
+  function parseAndRender(csvText) {
+    const result = Papa.parse(csvText.trim(), { header: true, skipEmptyLines: true });
+    const rows = result.data;
+
+    // Validate: must have 'name' column
+    if (!rows.length || !Object.keys(rows[0]).map(k => k.toLowerCase()).includes('name')) {
+      showCSVError('CSV must have a "name" column as its first row. Check the file and try again.');
+      return;
+    }
+
+    // Normalise keys to lowercase, handle duplicate names (last wins)
+    const seen = new Map();
+    rows.forEach((row, i) => {
+      const norm = {};
+      Object.entries(row).forEach(([k, v]) => { norm[k.toLowerCase().trim()] = v?.trim() || ''; });
+      if (!norm.name) return;
+      seen.set(norm.name, { id: i, ...norm });
+    });
+    allUseCases = [...seen.values()];
+
+    if (!allUseCases.length) { showCSVError('No valid rows found in usecases.csv.'); return; }
+
+    // Check for optional 'selected' column — pre-tick those marked 'yes'/'true'/'1'
+    const hasSelectedCol = 'selected' in allUseCases[0];
+    checkedIds = new Set();
+    allUseCases.forEach((uc, i) => {
+      const sel = uc.selected?.toLowerCase();
+      if (!hasSelectedCol || sel === 'yes' || sel === 'true' || sel === '1') checkedIds.add(i);
+    });
+
+    renderCards();
+    document.getElementById('csvLoading').style.display = 'none';
+    document.getElementById('csvError').style.display = 'none';
+    document.getElementById('selectAllBtn').disabled = false;
+    updateUI();
+  }
+
+  function renderCards() {
+    const list = document.getElementById('ucList');
+    list.innerHTML = '';
+    allUseCases.forEach((uc, i) => {
+      const isChecked = checkedIds.has(i);
+      // Build tag pills from department / tags / category columns if present
+      const tagSources = ['department','category','tags','type'].map(k => uc[k]).filter(Boolean);
+      const tagPills = tagSources.flatMap(t => t.split(/[;,|]/)).map(t => t.trim()).filter(Boolean);
+      const tagHTML = tagPills.map(t => `<span class="tag">${esc(t)}</span>`).join('');
+      // Description: prefer 'description' col, then 'pain_point', then any other non-name col with content
+      const desc = uc.description || uc.pain_point || uc.current_pain_point || uc.details || '';
+
+      list.innerHTML += `
+        <div class="uc-card${isChecked ? ' checked' : ''}" data-idx="${i}" onclick="toggleCard(this)">
+          <div class="cb"><div class="cb-tick"></div></div>
+          <div class="uc-body">
+            <h3>${esc(uc.name)}</h3>
+            ${desc ? `<p>${esc(desc)}</p>` : ''}
+            ${tagHTML ? `<div class="uc-meta">${tagHTML}</div>` : ''}
+          </div>
+          <span class="uc-arrow">›</span>
+        </div>`;
+    });
+  }
+
+  function showCSVError(msg) {
+    document.getElementById('csvLoading').style.display = 'none';
+    document.getElementById('csvErrorMsg').textContent = msg;
+    document.getElementById('csvError').style.display = 'flex';
+    document.getElementById('rowCount').textContent = '0 use cases loaded';
+  }
+
+  function esc(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* ── SELECTION ── */
+  function getSelectedCards() {
+    return [...document.querySelectorAll('.uc-card.checked')];
+  }
+
+  function updateUI() {
+    const total = allUseCases.length;
+    const n = getSelectedCards().length;
+    document.getElementById('selNum').textContent = n;
+    document.getElementById('totalNum').textContent = total;
+    document.getElementById('evalCount').textContent = n;
+    document.getElementById('evalBtn').disabled = n === 0;
+    document.getElementById('rowCount').textContent = total + ' use case' + (total !== 1 ? 's' : '') + ' loaded';
+    document.getElementById('selectAllBtn').textContent = n === total ? 'Deselect All' : 'Select All';
+  }
+
+  function toggleCard(el) {
+    const idx = parseInt(el.dataset.idx);
+    el.classList.toggle('checked');
+    if (el.classList.contains('checked')) { checkedIds.add(idx); } else { checkedIds.delete(idx); }
+    updateUI();
+  }
+
+  function toggleAll() {
+    const n = getSelectedCards().length;
+    const total = allUseCases.length;
+    const shouldCheck = n < total;
+    document.querySelectorAll('.uc-card').forEach((c, i) => {
+      c.classList.toggle('checked', shouldCheck);
+      if (shouldCheck) { checkedIds.add(parseInt(c.dataset.idx)); } else { checkedIds.clear(); }
+    });
+    updateUI();
+  }
+
+  function proceed() {
+    const prov = localStorage.getItem('selected_provider') || 'anthropic';
+    const key = localStorage.getItem(PROVIDERS[prov].lsKey) || '';
+    if (!key) { toggleSettings(); return; }
+    const selected = getSelectedCards().map(c => {
+      const idx = parseInt(c.dataset.idx);
+      const uc = allUseCases[idx];
+      // Pass all CSV columns as context for richer AI scoring
+      const tagSources = ['department','category','tags','type'].map(k => uc[k]).filter(Boolean);
+      return {
+        id: idx,
+        name: uc.name,
+        desc: uc.description || uc.pain_point || uc.current_pain_point || uc.details || '',
+        tags: tagSources.flatMap(t => t.split(/[;,|]/)).map(t => t.trim()).filter(Boolean),
+        rawRow: uc  // full CSV row for context
+      };
+    });
+    if (!selected.length) return;
+    localStorage.setItem('4p4i_selected', JSON.stringify(selected));
+    window.location.href = 'evaluate.html';
+  }
+
+  /* ── INIT ── */
+  ['anthropic','openai','gemini'].forEach(p => {
+    const saved = localStorage.getItem(PROVIDERS[p].lsKey);
+    if (saved) document.getElementById('key-' + p).value = saved;
+    updateProviderBadge(p, !!saved);
   });
-  return{headers:hdrs,rows:rows};
-}
-
-/* ── CSV loading ── */
-function loadCSV(){
-  document.getElementById('ldg').style.display='flex';
-  document.getElementById('cerr').style.display='none';
-  document.getElementById('ucList').innerHTML='';
-  document.getElementById('rowCount').textContent='Loading usecases.csv…';
-  fetch('usecases.csv?t='+Date.now())
-    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
-    .then(function(txt){ document.getElementById('ldg').style.display='none'; process(txt); })
-    .catch(function(e){ document.getElementById('ldg').style.display='none'; showErr('Could not fetch usecases.csv — '+e.message); });
-}
-
-function loadFromFile(inp){
-  var f=inp.files&&inp.files[0]; if(!f) return;
-  document.getElementById('ldg').style.display='flex'; document.getElementById('cerr').style.display='none';
-  var r=new FileReader();
-  r.onload=function(e){ document.getElementById('ldg').style.display='none'; process(e.target.result); };
-  r.onerror=function(){ document.getElementById('ldg').style.display='none'; showErr('Could not read file.'); };
-  r.readAsText(f);
-}
-
-function showErr(msg){ document.getElementById('cerr').style.display='block'; document.getElementById('cetitle').textContent=msg; document.getElementById('rowCount').textContent='CSV not loaded'; }
-
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-function process(txt){
-  var p=parseCSV(txt), rows=p.rows;
-  if(!rows.length||p.headers.indexOf('name')===-1){ showErr('CSV must have a "name" column.'); return; }
-  var seen={};
-  rows.forEach(function(row){ if(row.name) seen[row.name]=row; });
-  useCases=Object.keys(seen).map(function(k){return seen[k];});
-  if(!useCases.length){ showErr('No valid rows found in CSV.'); return; }
-  var hasSel=p.headers.indexOf('selected')!==-1;
-  checked=new Set();
-  useCases.forEach(function(uc,i){
-    var s=(uc.selected||'').toLowerCase();
-    if(!hasSel||s==='yes'||s==='true'||s==='1') checked.add(i);
-  });
-  renderCards();
-  document.getElementById('selAllBtn').disabled=false;
-  updateUI();
-}
-
-function renderCards(){
-  var list=document.getElementById('ucList'); list.innerHTML='';
-  useCases.forEach(function(uc,i){
-    var desc=uc.description||uc.pain_point||uc.current_pain_point||uc.details||'';
-    var ts=[uc.department,uc.category,uc.tags,uc.type].filter(Boolean);
-    var tags=[]; ts.forEach(function(t){t.split(/[;,|]/).forEach(function(s){var v=s.trim();if(v)tags.push(v);});});
-    var th=tags.map(function(t){return '<span class="tag">'+esc(t)+'</span>';}).join('');
-    list.innerHTML+='<div class="uc-card'+(checked.has(i)?' chk':'')+'" data-i="'+i+'" onclick="toggle(this)">'
-      +'<div class="cb"><div class="cbt"></div></div>'
-      +'<div class="ub"><h3>'+esc(uc.name)+'</h3>'+(desc?'<p>'+esc(desc)+'</p>':'')+(th?'<div class="umeta">'+th+'</div>':'')+'</div>'
-      +'<span class="uarr">›</span></div>';
-  });
-}
-
-function updateUI(){
-  var n=document.querySelectorAll('.uc-card.chk').length, tot=useCases.length;
-  document.getElementById('selNum').textContent=n;
-  document.getElementById('totalNum').textContent=tot;
-  document.getElementById('evalCnt').textContent=n;
-  document.getElementById('evalBtn').disabled=n===0;
-  document.getElementById('rowCount').textContent=tot+' use case'+(tot!==1?'s':'')+' loaded';
-  document.getElementById('selAllBtn').textContent=(n===tot&&tot>0)?'Deselect All':'Select All';
-}
-
-function toggle(el){ var i=parseInt(el.dataset.i,10); el.classList.toggle('chk'); checked[el.classList.contains('chk')?'add':'delete'](i); updateUI(); }
-
-function toggleAll(){
-  var n=document.querySelectorAll('.uc-card.chk').length, chk=n<useCases.length;
-  checked=new Set(); document.querySelectorAll('.uc-card').forEach(function(c){ c.classList.toggle('chk',chk); if(chk) checked.add(parseInt(c.dataset.i,10)); }); updateUI();
-}
-
-function proceed(){
-  var prov=localStorage.getItem('selected_provider')||'anthropic';
-  if(!localStorage.getItem(PROV[prov].ls)){ toggleSettings(); return; }
-  var sel=[];
-  document.querySelectorAll('.uc-card.chk').forEach(function(c){
-    var uc=useCases[parseInt(c.dataset.i,10)];
-    var ts=[uc.department,uc.category,uc.tags,uc.type].filter(Boolean), tags=[];
-    ts.forEach(function(t){t.split(/[;,|]/).forEach(function(s){var v=s.trim();if(v)tags.push(v);});});
-    sel.push({id:parseInt(c.dataset.i,10),name:uc.name,desc:uc.description||uc.pain_point||uc.current_pain_point||uc.details||'',tags:tags,rawRow:uc});
-  });
-  if(!sel.length) return;
-  localStorage.setItem('4p4i_selected',JSON.stringify(sel));
-  window.location.href='evaluate.html';
-}
-
-window.addEventListener('load', function(){
-  ['anthropic','openai','gemini'].forEach(function(p){
-    var s=localStorage.getItem(PROV[p].ls); if(s) document.getElementById('ki-'+p).value=s; badge(p,!!s);
-  });
-  selProv(localStorage.getItem('selected_provider')||'anthropic');
-  dot();
+  selectProvider(localStorage.getItem('selected_provider') || 'anthropic');
+  updateKeyDot();
   loadCSV();
-});
 </script>
 </body>
 </html>
