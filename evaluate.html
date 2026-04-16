@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valoir ROI Prioritizer — Evaluating</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg0:#0a0c10; --bg1:#12151d; --bg2:#191e2a; --bg3:#1f2535;
+    --brd:#252d40; --brd2:#2e3850;
+    --blue:#4f8ef7; --green:#3dd68c; --amber:#f5a623; --red:#f75151;
+    --tp:#e8ecf4; --tm:#8392ad; --ts:#5a6880;
+  }
+  html,body { min-height:100vh; background:var(--bg0); color:var(--tp); font-family:'IBM Plex Sans',system-ui,sans-serif; }
+
+  .topbar { background:var(--bg1); border-bottom:1px solid var(--brd); padding:0 32px; height:56px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:20; }
+  .topbar-left { display:flex; align-items:center; }
+  .topbar-right { display:flex; align-items:center; gap:12px; }
+  .logo { font-family:'DM Serif Display',Georgia,serif; font-size:17px; display:flex; align-items:center; gap:10px; }
+  .logo-accent { color:var(--amber); }
+  .logo-sub { font-family:'IBM Plex Sans',sans-serif; font-size:13px; font-weight:300; color:var(--tm); border-left:1px solid var(--brd2); padding-left:12px; }
+  .steps { display:flex; align-items:center; }
+  .step { display:flex; align-items:center; gap:7px; font-size:12px; color:var(--ts); padding:6px 12px; font-family:'IBM Plex Mono',monospace; }
+  .step.active { color:var(--blue); }
+  .step.done { color:var(--green); }
+  .step-num { width:22px; height:22px; border-radius:50%; border:1px solid currentColor; display:flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0; }
+  .step.done .step-num { background:var(--green); border-color:var(--green); color:#0a0c10; }
+  .step.active .step-num { background:var(--blue); border-color:var(--blue); color:#0a0c10; }
+  .step-line { width:32px; height:1px; background:var(--brd2); }
+  .gear-btn { width:34px; height:34px; border-radius:8px; border:1px solid var(--brd2); background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:border-color 0.15s,background 0.15s; color:var(--ts); }
+  .gear-btn:hover { border-color:var(--blue); color:var(--blue); background:rgba(79,142,247,0.07); }
+  .gear-btn.active { border-color:var(--blue); color:var(--blue); background:rgba(79,142,247,0.1); }
+  .gear-btn svg { width:16px; height:16px; }
+  .key-dot { width:7px; height:7px; border-radius:50%; background:var(--green); border:1.5px solid var(--bg1); position:absolute; top:6px; right:6px; display:none; }
+  .gear-wrap { position:relative; }
+  .gear-wrap.has-key .key-dot { display:block; }
+  .settings-drawer { position:fixed; top:56px; right:0; width:360px; background:var(--bg1); border-left:1px solid var(--brd); border-bottom:1px solid var(--brd); border-radius:0 0 0 12px; padding:20px 22px 22px; z-index:19; transform:translateY(-8px); opacity:0; pointer-events:none; transition:transform 0.2s ease,opacity 0.2s ease; max-height:calc(100vh - 56px); overflow-y:auto; }
+  .settings-drawer.open { transform:translateY(0); opacity:1; pointer-events:all; }
+  .drawer-title { font-size:10px; font-family:'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:0.1em; color:var(--ts); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+  .drawer-title::after { content:''; flex:1; height:1px; background:var(--brd); }
+  .provider-label { font-size:10px; font-family:'IBM Plex Mono',monospace; color:var(--ts); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:5px; }
+  .provider-selector { display:flex; gap:6px; margin-bottom:18px; }
+  .prov-btn { flex:1; padding:7px 4px; border-radius:7px; border:1px solid var(--brd2); background:transparent; color:var(--ts); font-size:11px; font-family:'IBM Plex Sans',sans-serif; cursor:pointer; transition:all 0.15s; text-align:center; }
+  .prov-btn:hover { color:var(--tm); background:var(--bg3); }
+  .prov-btn.selected { color:var(--tp); border-color:var(--blue); background:rgba(79,142,247,0.1); font-weight:500; }
+  .prov-btn .prov-dot { width:5px; height:5px; border-radius:50%; background:var(--ts); display:inline-block; margin-right:4px; vertical-align:middle; }
+  .prov-btn.has-saved .prov-dot { background:var(--green); }
+  .key-section { background:var(--bg2); border:1px solid var(--brd); border-radius:9px; padding:12px 14px; margin-bottom:10px; }
+  .key-section-head { display:flex; align-items:center; margin-bottom:8px; }
+  .key-section-name { font-size:12px; font-weight:500; display:flex; align-items:center; gap:7px; }
+  .key-saved-badge { font-size:9px; font-family:'IBM Plex Mono',monospace; padding:2px 7px; border-radius:10px; background:rgba(61,214,140,0.1); color:var(--green); border:1px solid rgba(61,214,140,0.25); }
+  .key-not-saved { font-size:9px; font-family:'IBM Plex Mono',monospace; color:var(--ts); }
+  .key-input { width:100%; background:var(--bg3); border:1px solid var(--brd2); border-radius:6px; padding:8px 10px; font-size:12px; font-family:'IBM Plex Mono',monospace; color:var(--tp); outline:none; margin-bottom:8px; }
+  .key-input:focus { border-color:var(--blue); }
+  .key-input::placeholder { color:var(--ts); font-size:11px; }
+  .key-actions { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+  .btn-test { background:var(--blue); color:#fff; border:none; border-radius:6px; padding:7px 14px; font-size:11px; font-weight:500; cursor:pointer; font-family:'IBM Plex Sans',sans-serif; display:flex; align-items:center; gap:5px; min-width:80px; justify-content:center; transition:opacity 0.15s; }
+  .btn-test:hover:not(:disabled) { opacity:0.85; }
+  .btn-test:disabled { opacity:0.45; cursor:not-allowed; }
+  .btn-kclr { background:transparent; border:1px solid var(--brd); color:var(--ts); border-radius:6px; padding:7px 10px; font-size:11px; cursor:pointer; font-family:'IBM Plex Sans',sans-serif; }
+  .btn-kclr:hover { border-color:var(--red); color:var(--red); }
+  .key-status { font-size:10px; font-family:'IBM Plex Mono',monospace; }
+  .key-status.ok { color:var(--green); }
+  .key-status.err { color:var(--red); }
+  .key-err-detail { font-size:10px; font-family:'IBM Plex Mono',monospace; color:var(--red); margin-top:6px; padding:6px 8px; background:rgba(247,81,81,0.07); border:1px solid rgba(247,81,81,0.18); border-radius:5px; line-height:1.5; display:none; word-break:break-all; }
+  .key-err-detail.show { display:block; }
+  @keyframes spin-s { to { transform:rotate(360deg); } }
+  .btn-spinner { width:11px; height:11px; border:2px solid rgba(255,255,255,0.25); border-top-color:#fff; border-radius:50%; animation:spin-s 0.7s linear infinite; display:none; }
+  .btn-test.testing .btn-spinner { display:block; }
+  .drawer-note { font-size:10px; color:var(--ts); line-height:1.6; margin-top:4px; }
+  .drawer-overlay { display:none; position:fixed; inset:0; z-index:18; }
+  .drawer-overlay.open { display:block; }
+
+  .page { max-width:760px; margin:0 auto; padding:44px 24px 60px; }
+  .page-header { margin-bottom:28px; }
+  .page-header h1 { font-family:'DM Serif Display',Georgia,serif; font-size:26px; font-weight:normal; margin-bottom:8px; }
+  .page-header p { font-size:13px; color:var(--tm); line-height:1.6; }
+
+  .prog-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .prog-label { font-size:12px; color:var(--tm); font-family:'IBM Plex Mono',monospace; }
+  .prog-pct { font-size:12px; color:var(--blue); font-family:'IBM Plex Mono',monospace; font-weight:500; }
+  .prog-track { height:4px; background:var(--bg3); border-radius:4px; margin-bottom:28px; overflow:hidden; }
+  .prog-fill { height:100%; background:var(--blue); border-radius:4px; width:0%; transition:width 0.5s ease; }
+
+  .eval-item { background:var(--bg2); border:1px solid var(--brd); border-radius:12px; padding:18px 20px; margin-bottom:10px; display:flex; align-items:center; gap:16px; transition:border-color 0.2s,background 0.2s; }
+  .eval-item.ev-active { border-color:var(--blue); background:#0f1827; }
+  .eval-item.ev-done { border-color:rgba(61,214,140,0.3); background:#0c1a14; }
+  .eval-item.ev-error { border-color:rgba(247,81,81,0.3); background:#1a0f0f; }
+  .eval-icon { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; border:1px solid var(--brd2); }
+  .ev-active .eval-icon { border-color:var(--blue); background:rgba(79,142,247,0.1); }
+  .ev-done .eval-icon { border-color:var(--green); background:rgba(61,214,140,0.1); }
+  .ev-error .eval-icon { border-color:var(--red); background:rgba(247,81,81,0.1); }
+  .dot-idle { width:8px; height:8px; border-radius:50%; background:var(--ts); }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .spin { width:16px; height:16px; border:2px solid rgba(79,142,247,0.2); border-top-color:var(--blue); border-radius:50%; animation:spin 0.75s linear infinite; }
+  .tick { width:12px; height:8px; border-left:2.5px solid var(--green); border-bottom:2.5px solid var(--green); transform:rotate(-45deg) translate(1px,-2px); }
+  .eval-info { flex:1; }
+  .eval-info h4 { font-size:14px; font-weight:500; margin-bottom:4px; }
+  .eval-info p { font-size:11px; color:var(--tm); font-family:'IBM Plex Mono',monospace; }
+  .eval-badge { font-size:10px; font-family:'IBM Plex Mono',monospace; font-weight:500; padding:4px 10px; border-radius:20px; border:1px solid var(--brd2); color:var(--ts); white-space:nowrap; flex-shrink:0; }
+  .badge-evaluating { color:var(--blue); border-color:rgba(79,142,247,0.4); background:rgba(79,142,247,0.07); }
+  .badge-queued { color:var(--ts); border-color:var(--brd); }
+  .badge-done { color:var(--green); border-color:rgba(61,214,140,0.4); background:rgba(61,214,140,0.07); }
+  .badge-error { color:var(--red); border-color:rgba(247,81,81,0.4); background:rgba(247,81,81,0.07); }
+
+  /* dim pills */
+  .active-detail { margin-top:10px; display:none; background:var(--bg3); border:1px solid var(--brd); border-radius:10px; padding:14px 16px; }
+  .active-detail.show { display:block; }
+  .detail-row { display:flex; align-items:flex-start; gap:10px; margin-bottom:8px; }
+  .detail-label { font-size:10px; color:var(--ts); font-family:'IBM Plex Mono',monospace; width:80px; flex-shrink:0; text-transform:uppercase; letter-spacing:0.06em; padding-top:3px; }
+  .dim-pills { display:flex; gap:5px; flex-wrap:wrap; }
+  .dim-pill { font-size:10px; font-family:'IBM Plex Mono',monospace; padding:3px 8px; border-radius:4px; border:1px solid var(--brd); color:var(--ts); background:var(--bg2); transition:all 0.3s; }
+  .dim-pill.benefit-scored { color:var(--green); border-color:rgba(61,214,140,0.35); background:rgba(61,214,140,0.07); }
+  .dim-pill.risk-scored { color:var(--amber); border-color:rgba(245,166,35,0.35); background:rgba(245,166,35,0.07); }
+
+  /* log */
+  .api-log { margin-top:28px; background:var(--bg1); border:1px solid var(--brd); border-radius:12px; overflow:hidden; }
+  .log-header { background:var(--bg2); padding:10px 16px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--brd); }
+  .log-title { font-size:10px; color:var(--ts); font-family:'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:0.1em; }
+  .log-live { display:flex; align-items:center; gap:6px; font-size:10px; color:var(--green); font-family:'IBM Plex Mono',monospace; }
+  .live-dot { width:6px; height:6px; border-radius:50%; background:var(--green); animation:pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .log-body { padding:12px 16px; min-height:120px; max-height:200px; overflow-y:auto; }
+  .log-line { display:flex; gap:12px; font-size:11px; font-family:'IBM Plex Mono',monospace; padding:2px 0; line-height:1.6; }
+  .log-line .lt { color:var(--ts); flex-shrink:0; width:42px; }
+  .lvl-info { color:var(--blue); }
+  .lvl-ok { color:var(--green); }
+  .lvl-warn { color:var(--amber); }
+  .lvl-err { color:var(--red); }
+  .log-line .msg { color:var(--tm); }
+  .log-line.hl .msg { color:var(--tp); }
+  @keyframes blink { 50%{opacity:0} }
+  .cursor { animation:blink 1s step-end infinite; color:var(--blue); }
+
+  /* error detail */
+  .error-detail { margin-top:8px; padding:10px 14px; background:rgba(247,81,81,0.07); border:1px solid rgba(247,81,81,0.2); border-radius:8px; font-size:11px; font-family:'IBM Plex Mono',monospace; color:var(--red); line-height:1.6; }
+  .retry-btn { background:transparent; border:1px solid var(--red); color:var(--red); border-radius:5px; padding:5px 12px; font-size:11px; cursor:pointer; margin-top:8px; font-family:'IBM Plex Sans',sans-serif; }
+  .retry-btn:hover { background:rgba(247,81,81,0.1); }
+
+  .cancel-row { margin-top:20px; text-align:center; }
+  .cancel-link { font-size:12px; color:var(--ts); text-decoration:none; font-family:'IBM Plex Mono',monospace; }
+  .cancel-link:hover { color:var(--tm); }
+</style>
+</head>
+<body>
+
+<div class="drawer-overlay" id="overlay" onclick="closeSettings()"></div>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo">Valoir<span class="logo-accent"> ROI</span><span class="logo-sub">AI Use Case Prioritizer</span></div>
+  </div>
+  <div class="steps">
+    <div class="step done"><div class="step-num">✓</div><span>Select</span></div>
+    <div class="step-line"></div>
+    <div class="step active"><div class="step-num">2</div><span>Evaluate</span></div>
+    <div class="step-line"></div>
+    <div class="step"><div class="step-num">3</div><span>Results</span></div>
+  </div>
+  <div class="topbar-right">
+    <div class="gear-wrap" id="gearWrap">
+      <button class="gear-btn" id="gearBtn" onclick="toggleSettings()" title="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+      <div class="key-dot" id="keyDot"></div>
+    </div>
+  </div>
+</div>
+
+<div class="settings-drawer" id="settingsDrawer">
+  <div class="drawer-title">Settings</div>
+  <div class="provider-label">Model for evaluation</div>
+  <div class="provider-selector">
+    <button class="prov-btn selected" id="psel-anthropic" onclick="selectProvider('anthropic')"><span class="prov-dot" id="pdot-anthropic"></span>Anthropic</button>
+    <button class="prov-btn" id="psel-openai" onclick="selectProvider('openai')"><span class="prov-dot" id="pdot-openai"></span>OpenAI</button>
+    <button class="prov-btn" id="psel-gemini" onclick="selectProvider('gemini')"><span class="prov-dot" id="pdot-gemini"></span>Gemini</button>
+  </div>
+  <div class="key-section">
+    <div class="key-section-head"><span class="key-section-name">Anthropic <span class="key-saved-badge" id="kbadge-anthropic" style="display:none">saved</span><span class="key-not-saved" id="knsaved-anthropic">not saved</span></span></div>
+    <input type="password" class="key-input" id="key-anthropic" placeholder="sk-ant-api03-…" autocomplete="off">
+    <div class="key-actions"><button class="btn-test" id="kbtn-anthropic" onclick="testAndSave('anthropic')"><div class="btn-spinner"></div><span>Test &amp; Save</span></button><button class="btn-kclr" onclick="clearProviderKey('anthropic')">Clear</button><span class="key-status" id="kstatus-anthropic"></span></div>
+    <div class="key-err-detail" id="kerr-anthropic"></div>
+  </div>
+  <div class="key-section">
+    <div class="key-section-head"><span class="key-section-name">OpenAI <span class="key-saved-badge" id="kbadge-openai" style="display:none">saved</span><span class="key-not-saved" id="knsaved-openai">not saved</span></span></div>
+    <input type="password" class="key-input" id="key-openai" placeholder="sk-…" autocomplete="off">
+    <div class="key-actions"><button class="btn-test" id="kbtn-openai" onclick="testAndSave('openai')"><div class="btn-spinner"></div><span>Test &amp; Save</span></button><button class="btn-kclr" onclick="clearProviderKey('openai')">Clear</button><span class="key-status" id="kstatus-openai"></span></div>
+    <div class="key-err-detail" id="kerr-openai"></div>
+  </div>
+  <div class="key-section">
+    <div class="key-section-head"><span class="key-section-name">Gemini <span class="key-saved-badge" id="kbadge-gemini" style="display:none">saved</span><span class="key-not-saved" id="knsaved-gemini">not saved</span></span></div>
+    <input type="password" class="key-input" id="key-gemini" placeholder="AIzaSy…" autocomplete="off">
+    <div class="key-actions"><button class="btn-test" id="kbtn-gemini" onclick="testAndSave('gemini')"><div class="btn-spinner"></div><span>Test &amp; Save</span></button><button class="btn-kclr" onclick="clearProviderKey('gemini')">Clear</button><span class="key-status" id="kstatus-gemini"></span></div>
+    <div class="key-err-detail" id="kerr-gemini"></div>
+  </div>
+  <div class="drawer-note">Keys are verified before saving. Stored in localStorage only — never proxied.</div>
+</div>
+
+<div class="page">
+  <div class="page-header">
+    <h1>Evaluating Use Cases</h1>
+    <p>Claude is applying Valoir's ROI framework to each use case — scoring 4 benefit dimensions (4P) and 4 risk dimensions (4I). Calls are made sequentially.</p>
+  </div>
+
+  <div class="prog-row">
+    <span class="prog-label" id="progLabel">Preparing evaluation…</span>
+    <span class="prog-pct" id="progPct">0%</span>
+  </div>
+  <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+
+  <div id="evalItems"></div>
+
+  <div id="activeDetail" class="active-detail">
+    <div class="detail-row">
+      <span class="detail-label">Model</span>
+      <span style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--tm);" id="modelLabel">—</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">4P Benefit</span>
+      <div class="dim-pills">
+        <span class="dim-pill" id="dp-people">People</span>
+        <span class="dim-pill" id="dp-process">Process</span>
+        <span class="dim-pill" id="dp-price">Price</span>
+        <span class="dim-pill" id="dp-potential">Potential</span>
+      </div>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">4I Risk</span>
+      <div class="dim-pills">
+        <span class="dim-pill" id="dp-intelligence">Intelligence</span>
+        <span class="dim-pill" id="dp-integration">Integration</span>
+        <span class="dim-pill" id="dp-interaction">Interaction</span>
+        <span class="dim-pill" id="dp-importance">Importance</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="api-log">
+    <div class="log-header">
+      <span class="log-title">Claude API · Live Log</span>
+      <span class="log-live" id="liveBadge"><span class="live-dot"></span>live</span>
+    </div>
+    <div class="log-body" id="logBody">
+      <div class="log-line"><span class="lt">00:00</span><span class="lvl-info">INFO</span>&nbsp;<span class="msg">Initialising Valoir evaluation session…</span></div>
+    </div>
+  </div>
+
+  <div class="cancel-row"><a href="index.html" class="cancel-link">← Cancel and go back</a></div>
+</div>
+
+<script>
+/* ─────────────────────────────────────────────
+   VALOIR SYSTEM PROMPT
+   ───────────────────────────────────────────── */
+const SYSTEM_PROMPT = `You are an expert AI strategy consultant applying Valoir's ROI framework to evaluate enterprise AI use cases.
+
+The framework scores each use case across two lenses:
+
+4P — BENEFIT SCORE (each dimension scored 1–5):
+- People: The greater the number of people (employees or customers) impacted, the greater the potential benefit. 1 = only a few people; 5 = almost all employees or customers.
+- Process: The greater the number of steps in a process and the more frequently it is executed, the greater the potential benefit. 1 = simple workflow, limited volume; 5 = multi-step workflow, high volume.
+- Price: An AI agent that replaces something expensive or avoids a costly alternative delivers greater benefit. 1 = low-cost activity replaced; 5 = high-cost activity or expensive alternative replaced.
+- Potential: The transformational potential — ability to launch new products, revenue streams, dramatically change customer engagement. 1 = incremental efficiency gain; 5 = game-changing transformation.
+
+4I — RISK SCORE (each dimension scored 1–5, where higher = more risk/cost):
+- Intelligence: The more reasoning, steps, or LLM calls required, the greater the cost/risk. 1 = simple declarative workflow; 5 = complex multi-step reasoning with multiple LLM calls.
+- Integration: The more data sources, APIs, or RAG requirements, the greater the cost/risk. 1 = single existing knowledge base; 5 = multiple data sources, complex integrations, heavy RAG.
+- Interaction: The more critical the quality of user interaction and need to fine-tune the experience, the greater the cost/risk. 1 = replacing a simple chatbot; 5 = replacing an in-person specialist interaction.
+- Importance: The more significant the negative impact of a wrong answer, the greater the cost/risk. 1 = low-stakes information delivery; 5 = high-stakes decisions (medical advice, large financial decisions).
+
+SCORING GUIDANCE:
+- Score each dimension independently and objectively based on the use case description
+- p_avg = average of the four P scores (1.0–5.0)
+- i_avg = average of the four I scores (1.0–5.0)
+- net_score = p_avg minus i_avg (ranges from -4.0 to +4.0; higher is better — high benefit, low risk)
+- recommended_priority: "High" if net_score >= 1.0, "Medium" if net_score >= 0, "Low" if net_score < 0
+
+You MUST respond with valid JSON only — no markdown, no preamble, no explanation outside the JSON object.`;
+
+function buildUserPrompt(uc) {
+  const ctx = (uc.desc || '') + (uc.tags && uc.tags.length ? '\nTags: ' + uc.tags.join(', ') : '');
+  return `Evaluate this AI use case using Valoir's ROI framework.
+
+USE CASE NAME: ${uc.name}
+
+CONTEXT:
+${ctx}
+
+Apply the Valoir 4P/4I scoring methodology and return ONLY this JSON structure — no markdown, no extra text:
+
+{
+  "scores": {
+    "people": <integer 1-5>,
+    "process": <integer 1-5>,
+    "price": <integer 1-5>,
+    "potential": <integer 1-5>,
+    "intelligence": <integer 1-5>,
+    "integration": <integer 1-5>,
+    "interaction": <integer 1-5>,
+    "importance": <integer 1-5>
+  },
+  "rationale": {
+    "people": "<one concise sentence explaining the score>",
+    "process": "<one concise sentence>",
+    "price": "<one concise sentence>",
+    "potential": "<one concise sentence>",
+    "intelligence": "<one concise sentence>",
+    "integration": "<one concise sentence>",
+    "interaction": "<one concise sentence>",
+    "importance": "<one concise sentence>"
+  },
+  "summary": "<2-3 sentence overall Valoir ROI assessment>",
+  "p_avg": <average of P scores to 2 decimal places>,
+  "i_avg": <average of I scores to 2 decimal places>,
+  "net_score": <p_avg minus i_avg to 2 decimal places>,
+  "recommended_priority": "<High | Medium | Low>"
+}`;
+}
+
+/* ─────────────────────────────────────────────
+   STATE
+   ───────────────────────────────────────────── */
+let selected = [];
+let results = [];
+let currentIdx = 0;
+let startTime = Date.now();
+
+const P_DIMS = ['people','process','price','potential'];
+const I_DIMS = ['intelligence','integration','interaction','importance'];
+const ALL_DIMS = [...P_DIMS, ...I_DIMS];
+
+/* ─────────────────────────────────────────────
+   INIT
+   ───────────────────────────────────────────── */
+window.addEventListener('load', () => {
+  const raw = localStorage.getItem('4p4i_selected');
+  selected = raw ? JSON.parse(raw) : [
+    { id:0, name:'Customer Support Agent', desc:'AI agent handling tier-1 support, routing escalations using company KB', tags:['CX','NLP'] },
+    { id:2, name:'Troubleshooting Product Issues', desc:'Diagnostic assistant guiding customers through issue resolution', tags:['CX','Self-service'] }
+  ];
+  buildItems();
+  setTimeout(runNext, 600);
+});
+
+/* ─────────────────────────────────────────────
+   HELPERS
+   ───────────────────────────────────────────── */
+function elapsed() {
+  const s = Math.round((Date.now() - startTime) / 1000);
+  return '00:' + String(s).padStart(2,'0');
+}
+
+function addLog(level, msg, hl) {
+  const body = document.getElementById('logBody');
+  const cls = {INFO:'lvl-info',OK:'lvl-ok',WARN:'lvl-warn',ERR:'lvl-err'}[level]||'lvl-info';
+  body.innerHTML += `<div class="log-line${hl?' hl':''}"><span class="lt">${elapsed()}</span><span class="${cls}">${level}</span>&nbsp;<span class="msg">${msg}</span></div>`;
+  body.scrollTop = body.scrollHeight;
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function setProgress(done, total) {
+  const pct = Math.round(done / total * 100);
+  document.getElementById('progFill').style.width = pct + '%';
+  document.getElementById('progPct').textContent = pct + '%';
+  document.getElementById('progLabel').textContent = done + ' of ' + total + ' complete';
+}
+
+function buildItems() {
+  const c = document.getElementById('evalItems');
+  c.innerHTML = '';
+  selected.forEach((uc, i) => {
+    c.innerHTML += `
+      <div class="eval-item" id="ei${i}">
+        <div class="eval-icon" id="icon${i}"><div class="dot-idle"></div></div>
+        <div class="eval-info">
+          <h4>${uc.name}</h4>
+          <p id="status${i}">Queued</p>
+        </div>
+        <span class="eval-badge badge-queued" id="badge${i}">Queued</span>
+      </div>`;
+  });
+}
+
+/* ─────────────────────────────────────────────
+   PROVIDERS CONFIG + API CALLS
+   ───────────────────────────────────────────── */
+const PROVIDERS = {
+  anthropic: {
+    label:'Anthropic', lsKey:'anthropic_key', model:'claude-sonnet-4-6',
+    test: async (key) => {
+      const r = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}, body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:10,messages:[{role:'user',content:'Hi'}]}) });
+      const d = await r.json(); if (!r.ok) throw new Error(`${d?.error?.type||'error'}: ${d?.error?.message||r.status}`);
+    },
+    call: async (key, sys, user) => {
+      const r = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}, body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:sys,messages:[{role:'user',content:user}]}) });
+      const d = await r.json(); if (!r.ok) throw new Error(`${d?.error?.type||'error'}: ${d?.error?.message||r.status}`);
+      return d.content?.find(b=>b.type==='text')?.text || '';
+    }
+  },
+  openai: {
+    label:'OpenAI', lsKey:'openai_key', model:'gpt-4o',
+    test: async (key) => {
+      const r = await fetch('https://api.openai.com/v1/chat/completions', { method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`}, body:JSON.stringify({model:'gpt-4o-mini',max_tokens:10,messages:[{role:'user',content:'Hi'}]}) });
+      const d = await r.json(); if (!r.ok) throw new Error(`${d?.error?.code||'error'}: ${d?.error?.message||r.status}`);
+    },
+    call: async (key, sys, user) => {
+      const r = await fetch('https://api.openai.com/v1/chat/completions', { method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`}, body:JSON.stringify({model:'gpt-4o',max_tokens:1000,messages:[{role:'system',content:sys},{role:'user',content:user}]}) });
+      const d = await r.json(); if (!r.ok) throw new Error(`${d?.error?.code||'error'}: ${d?.error?.message||r.status}`);
+      return d.choices?.[0]?.message?.content || '';
+    }
+  },
+  gemini: {
+    label:'Gemini', lsKey:'gemini_key', model:'gemini-2.0-flash',
+    test: async (key) => {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts:[{text:'Hi'}]}],generationConfig:{maxOutputTokens:10}}) });
+      const d = await r.json(); if (!r.ok) throw new Error(`${d?.error?.status||'error'}: ${d?.error?.message||r.status}`);
+    },
+    call: async (key, sys, user) => {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:[{parts:[{text:user}]}],generationConfig:{maxOutputTokens:1000}}) });
+      const d = await r.json(); if (!r.ok) throw new Error(`${d?.error?.status||'error'}: ${d?.error?.message||r.status}`);
+      return d.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    }
+  }
+};
+
+async function callLLM(uc) {
+  const provId = localStorage.getItem('selected_provider') || 'anthropic';
+  const prov = PROVIDERS[provId];
+  const key = localStorage.getItem(prov.lsKey) || '';
+  if (!key) throw new Error(`No ${prov.label} API key saved. Open Settings (⚙) to add one.`);
+  const raw = await prov.call(key, SYSTEM_PROMPT, buildUserPrompt(uc));
+  const cleaned = raw.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
+  let parsed;
+  try { parsed = JSON.parse(cleaned); }
+  catch(e) { const m = cleaned.match(/\{[\s\S]*\}/); if (m) { parsed = JSON.parse(m[0]); } else { throw new Error('Could not parse JSON. Raw: ' + raw.slice(0,200)); } }
+  return parsed;
+}
+
+/* ─────────────────────────────────────────────
+   SETTINGS GEAR
+   ───────────────────────────────────────────── */
+function toggleSettings() {
+  const d = document.getElementById('settingsDrawer'), b = document.getElementById('gearBtn'), o = document.getElementById('overlay');
+  const open = d.classList.contains('open');
+  d.classList.toggle('open',!open); b.classList.toggle('active',!open); o.classList.toggle('open',!open);
+}
+function closeSettings() {
+  document.getElementById('settingsDrawer').classList.remove('open');
+  document.getElementById('gearBtn').classList.remove('active');
+  document.getElementById('overlay').classList.remove('open');
+}
+function selectProvider(p) {
+  localStorage.setItem('selected_provider', p);
+  ['anthropic','openai','gemini'].forEach(id => document.getElementById('psel-'+id).classList.toggle('selected', id===p));
+}
+async function testAndSave(p) {
+  const cfg = PROVIDERS[p];
+  const key = document.getElementById('key-'+p).value.trim();
+  if (!key) return;
+  const btn = document.getElementById('kbtn-'+p);
+  const spinner = btn.querySelector('.btn-spinner');
+  const statusEl = document.getElementById('kstatus-'+p);
+  const errEl = document.getElementById('kerr-'+p);
+  btn.disabled=true; btn.classList.add('testing'); spinner.style.display='block';
+  errEl.classList.remove('show'); statusEl.textContent=''; statusEl.className='key-status';
+  try {
+    await cfg.test(key);
+    localStorage.setItem(cfg.lsKey, key);
+    updateProviderBadge(p,true); updateKeyDot();
+    statusEl.textContent='✓ Verified'; statusEl.className='key-status ok';
+    setTimeout(()=>{ statusEl.textContent=''; },3000);
+  } catch(e) {
+    updateProviderBadge(p,false); updateKeyDot();
+    statusEl.textContent='✗ Failed'; statusEl.className='key-status err';
+    errEl.textContent=e.message; errEl.classList.add('show');
+    localStorage.removeItem(cfg.lsKey);
+  }
+  btn.disabled=false; btn.classList.remove('testing'); spinner.style.display='none';
+}
+function clearProviderKey(p) {
+  localStorage.removeItem(PROVIDERS[p].lsKey);
+  document.getElementById('key-'+p).value='';
+  document.getElementById('kerr-'+p).classList.remove('show');
+  document.getElementById('kstatus-'+p).textContent='';
+  updateProviderBadge(p,false); updateKeyDot();
+}
+function updateProviderBadge(p, saved) {
+  document.getElementById('kbadge-'+p).style.display = saved?'inline':'none';
+  document.getElementById('knsaved-'+p).style.display = saved?'none':'inline';
+  document.getElementById('psel-'+p).classList.toggle('has-saved', saved);
+  document.getElementById('pdot-'+p).style.background = saved?'var(--green)':'var(--ts)';
+}
+function updateKeyDot() {
+  const any = ['anthropic','openai','gemini'].some(p=>!!localStorage.getItem(PROVIDERS[p].lsKey));
+  document.getElementById('gearWrap').classList.toggle('has-key',any);
+}
+['anthropic','openai','gemini'].forEach(p => {
+  const saved = localStorage.getItem(PROVIDERS[p].lsKey);
+  if (saved) document.getElementById('key-'+p).value = saved;
+  updateProviderBadge(p,!!saved);
+});
+selectProvider(localStorage.getItem('selected_provider')||'anthropic');
+updateKeyDot();
+async function runNext() {
+  if (currentIdx >= selected.length) { finishAll(); return; }
+
+  const uc = selected[currentIdx];
+  const i = currentIdx;
+
+  // Set active UI
+  document.getElementById('ei' + i).className = 'eval-item ev-active';
+  document.getElementById('icon' + i).innerHTML = '<div class="spin"></div>';
+  document.getElementById('status' + i).textContent = 'Sending to Claude API…';
+  document.getElementById('badge' + i).className = 'eval-badge badge-evaluating';
+  document.getElementById('badge' + i).textContent = 'Evaluating…';
+
+  // Show detail panel under current item
+  const detail = document.getElementById('activeDetail');
+  detail.className = 'active-detail show';
+  document.getElementById('ei' + i).after(detail);
+  const pId = localStorage.getItem('selected_provider')||'anthropic';
+  document.getElementById('modelLabel').textContent = PROVIDERS[pId].label + ' · ' + PROVIDERS[pId].model;
+  ALL_DIMS.forEach(d => { const el = document.getElementById('dp-' + d); if(el) el.className = 'dim-pill'; });
+
+  addLog('INFO', `Evaluating: "${uc.name}"`);
+  const provId = localStorage.getItem('selected_provider')||'anthropic';
+  addLog('INFO', `Provider: ${PROVIDERS[provId].label}  model: ${PROVIDERS[provId].model}  max_tokens: 1000`);
+
+  try {
+    // Animate dim pills while waiting
+    let dimIdx = 0;
+    const dimTimer = setInterval(() => {
+      if (dimIdx >= ALL_DIMS.length) { clearInterval(dimTimer); return; }
+      const d = ALL_DIMS[dimIdx];
+      const el = document.getElementById('dp-' + d);
+      if (el) el.className = 'dim-pill ' + (P_DIMS.includes(d) ? 'benefit-scored' : 'risk-scored');
+      addLog('INFO', (P_DIMS.includes(d) ? '4P' : '4I') + ' · ' + d + ' — scoring…');
+      dimIdx++;
+    }, 800);
+
+    const result = await callLLM(uc);
+    clearInterval(dimTimer);
+
+    // Ensure all pills lit
+    ALL_DIMS.forEach(d => {
+      const el = document.getElementById('dp-' + d);
+      if (el) el.className = 'dim-pill ' + (P_DIMS.includes(d) ? 'benefit-scored' : 'risk-scored');
+    });
+
+    addLog('OK', `4P benefit avg: ${Number(result.p_avg).toFixed(2)}  ·  4I risk avg: ${Number(result.i_avg).toFixed(2)}`, true);
+    addLog('OK', `Net score: ${Number(result.net_score).toFixed(2)}  ·  Priority: ${result.recommended_priority}`, true);
+
+    // Done state
+    document.getElementById('ei' + i).className = 'eval-item ev-done';
+    document.getElementById('icon' + i).innerHTML = '<div class="tick"></div>';
+    document.getElementById('status' + i).textContent = `Complete · net score: ${Number(result.net_score).toFixed(2)} · ${result.recommended_priority}`;
+    document.getElementById('badge' + i).className = 'eval-badge badge-done';
+    document.getElementById('badge' + i).textContent = result.recommended_priority;
+
+    results.push({ ...uc, result });
+
+  } catch(err) {
+    addLog('ERR', 'API error: ' + err.message);
+
+    document.getElementById('ei' + i).className = 'eval-item ev-error';
+    document.getElementById('icon' + i).innerHTML = '<div style="color:var(--red);font-size:16px;font-weight:500;">✕</div>';
+    document.getElementById('status' + i).textContent = 'Error — ' + err.message.slice(0, 80);
+    document.getElementById('badge' + i).className = 'eval-badge badge-error';
+    document.getElementById('badge' + i).textContent = 'Error';
+
+    // Still push with null result so we can show partial results
+    results.push({ ...uc, result: null, error: err.message });
+  }
+
+  currentIdx++;
+  setProgress(currentIdx, selected.length);
+  await delay(500);
+  runNext();
+}
+
+function finishAll() {
+  document.getElementById('activeDetail').className = 'active-detail';
+  document.getElementById('liveBadge').innerHTML = '<span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;margin-right:6px;"></span><span style="color:var(--green)">complete</span>';
+
+  const successful = results.filter(r => r.result !== null).length;
+  addLog('OK', `Evaluation complete. ${successful}/${selected.length} successful. Navigating to results…`);
+
+  localStorage.setItem('4p4i_results', JSON.stringify(results));
+  setTimeout(() => { window.location.href = 'results.html'; }, 1400);
+}
+</script>
+</body>
+</html>

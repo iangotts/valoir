@@ -1,0 +1,4 @@
+name,department,description,current_pain_point,selected
+Customer Support Agent,CX,AI-powered agent that handles tier-1 support queries routes escalations and drafts responses using the company knowledge base and customer history.,Manual triage takes 3–4 hrs/day per agent and response quality is inconsistent.,yes
+Product Return Processing,Operations,Automate return eligibility checks generate shipping labels and process refunds with minimal human review for standard return cases.,Manual processing takes up to 2 days and error rates cause customer complaints.,
+Troubleshooting Product Issues,CX,Interactive AI diagnostic assistant that guides customers through product issue resolution via dynamic decision trees and context-aware guidance.,High call volume for issues that could be self-served; no scalable digital alternative.,yes
